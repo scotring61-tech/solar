@@ -1,1 +1,2 @@
 - Fix charger sensor temp readings below freezing
+- Fix crash when rotating to landscape

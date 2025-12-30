@@ -91,6 +91,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.codelv.solar.MainActivity.Companion.dataStore
 import com.codelv.solar.MonitorService.Companion.ACTION_BATTERY_MONITOR_CONNECTED
 import com.codelv.solar.MonitorService.Companion.ACTION_BATTERY_MONITOR_DATA_AVAILABLE
 import com.codelv.solar.MonitorService.Companion.ACTION_SOLAR_CHARGER_CONNECTED
@@ -136,7 +137,9 @@ import kotlin.math.max
 const val SNAPSHOT_PERIOD: Long = 1000
 
 class MainActivity : ComponentActivity() {
-    val dataStore by preferencesDataStore(name = "user_preferences")
+    companion object {
+        val Context.dataStore by preferencesDataStore(name = "user_preferences")
+    }
     val state = AppViewModel()
     val handler = Handler(Looper.getMainLooper())
     var monitorService: MonitorService? = null;
@@ -416,6 +419,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         unregisterReceiver(dataReceiver)
+        unbindService(serviceConnection);
         super.onDestroy()
     }
 
@@ -462,13 +466,13 @@ fun MainView(state: AppViewModel) {
     val activity = context.getActivity<MainActivity>()!!
     LaunchedEffect(Unit) {
         withContext(Dispatchers.Default) {
-            state.load(activity.dataStore)
+            state.load(context.dataStore)
             while (true) {
                 delay(SNAPSHOT_PERIOD)
                 state.snapshot()
                 state.syncPendingChanges()
                 if (state.unsaved.value) {
-                    state.save(activity.dataStore)
+                    state.save(context.dataStore)
                 }
             }
         }
